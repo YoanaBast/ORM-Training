@@ -95,7 +95,6 @@ DATABASES = {
         "PORT": "5432",
     }
 }
-print("DB_PASSWORD:", str(os.getenv('DB_PASSWORD')))  # use repr to see quotes or None clearly
 
 # DATABASES = {
 #     'default': {

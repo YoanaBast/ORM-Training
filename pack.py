@@ -9,7 +9,7 @@ def pack(folder_name):
     excluding virtual environments and unnecessary directories,
     added input option for folders as I will split my project into dirs.
     """
-    # Remove old archives
+    # Remove old archives !
     for item in os.listdir(folder_name):
         if item.endswith(".zip"):
             file_path = os.path.join(folder_name, item)

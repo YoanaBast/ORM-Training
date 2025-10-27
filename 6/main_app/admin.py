@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db import models
-from .models import Pet, Artifact, Location, Car, Task
+from .models import Pet, Artifact, Location, Car, Task, HotelRoom, Character
 
 # Register your models here.
 @admin.register(Pet)
@@ -22,3 +22,20 @@ class CarAdmin(admin.ModelAdmin):
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
     list_display = ("title", "description", "due_date", 'is_finished')
+
+@admin.register(HotelRoom)
+class HotelRoomAdmin(admin.ModelAdmin):
+    list_display = ("room_number", "price_per_night", "is_reserved", "capacity")
+
+@admin.register(Character)
+class CharacterAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "class_name",
+        "level",
+        "strength",
+        "dexterity",
+        "intelligence",
+        "hit_points",
+        "inventory",
+    )

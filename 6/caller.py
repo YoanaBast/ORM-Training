@@ -1,12 +1,15 @@
 import os
 import django
 from decimal import Decimal
+
+from django.db.models import QuerySet, Case, When, F, Value
+
 # Set up Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
 django.setup()
 
 # Import your models here
-from main_app.models import Pet, Artifact, Location, Car, Task
+from main_app.models import Pet, Artifact, Location, Car, Task, HotelRoom, Character
 # Create queries within functions
 
 def create_pet(name: str, species: str):
@@ -147,3 +150,77 @@ def encode_and_replace(text: str, task_title: str):
 
 # encode_and_replace("Zdvk#wkh#glvkhv$", "Sample Task")
 # print(Task.objects.get(title='Sample Task').description)
+
+def get_deluxe_rooms():
+    rooms = HotelRoom.objects.filter(room_type='Deluxe')
+    odd_rooms = [r for r in rooms if r.id % 2 == 0]
+    result = ''
+    for room in odd_rooms:
+        result += f"\nDeluxe room with number {room.room_number} costs {room.price_per_night}$ per night!"
+    return result
+
+# print(get_deluxe_rooms())
+
+def increase_room_capacity():
+    rooms = HotelRoom.objects.filter(is_reserved=True)
+    for room in rooms:
+        try:
+            previous_room = HotelRoom.objects.get(id=(room.id - 1))
+        except HotelRoom.DoesNotExist:
+            previous_room = None
+
+        if not previous_room:
+            room.capacity = room.capacity + room.id
+        else:
+            room.capacity = room.capacity + previous_room.capacity
+        room.save()
+
+# increase_room_capacity()
+
+def reserve_first_room():
+    f_room = HotelRoom.objects.first()
+    f_room.is_reserved = True
+    f_room.save()
+
+def delete_last_room():
+    l_room = HotelRoom.objects.last()
+    if l_room and not l_room.is_reserved:
+        l_room.delete()
+
+# print(get_deluxe_rooms())
+# reserve_first_room()
+# print(HotelRoom.objects.get(room_number=401).is_reserved)
+
+def update_characters() -> None:
+    """
+    UPDATE characters
+    SET
+        level = CASE
+            WHEN class_name = 'Mage' THEN level + 3
+            ELSE level
+        END
+        intelligence = CASE ... END
+    """
+
+    Character.objects.update(
+        level=Case(
+            When(class_name='Mage', then=F('level') + 3),
+            default=F('level')
+        ),
+        intelligence=Case(
+            When(class_name='Mage', then=F('intelligence') - 7),
+            default=F('intelligence')
+        ),
+        hit_points=Case(
+            When(class_name='Warrior', then=F('hit_points') / 2),
+            default=F('hit_points')
+        ),
+        dexterity=Case(
+            When(class_name='Warrior', then=F('dexterity') + 4),
+            default=F('dexterity')
+        ),
+        inventory=Case(
+            When(class_name__in=['Assassin', 'Scout'], then=Value('The inventory is empty')),
+            default=F('inventory')
+        )
+    )

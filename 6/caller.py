@@ -2,6 +2,7 @@ import os
 import django
 from decimal import Decimal
 
+from django.db import models
 from django.db.models import QuerySet, Case, When, F, Value
 
 # Set up Django
@@ -224,3 +225,51 @@ def update_characters() -> None:
             default=F('inventory')
         )
     )
+
+class CharacterTypeChoices(models.TextChoices):
+    MAGE = "Mage", "Mage"
+    WARRIOR = "Warrior", "Warrior"
+    ASSASSIN = "Assassin", "Assassin"
+    SCOUT = "Scout", "Scout"
+    FUSION = "Fusion", "Fusion"
+
+def fuse_characters(first_character: Character, second_character: Character) -> None:
+    inventory = None
+
+    if first_character.class_name in [CharacterTypeChoices.MAGE, CharacterTypeChoices.SCOUT]:
+        inventory = "Bow of the Elven Lords, Amulet of Eternal Wisdom"
+    elif first_character.class_name in [CharacterTypeChoices.WARRIOR, CharacterTypeChoices.ASSASSIN]:
+        inventory = "Dragon Scale Armor, Excalibur"
+
+    Character.objects.create(
+        name=first_character.name + ' ' + second_character.name,
+        class_name=CharacterTypeChoices.FUSION,
+        level=(first_character.level + second_character.level) // 2,
+        strength=(first_character.strength + second_character.strength) * 1.2,
+        dexterity=(first_character.dexterity + second_character.dexterity) * 1.4,
+        intelligence=(first_character.intelligence + second_character.intelligence) * 1.5,
+        hit_points=(first_character.hit_points + second_character.hit_points),
+        inventory=inventory
+    )
+
+    first_character.delete()
+    second_character.delete()
+
+def grand_dexterity() -> None:
+    """
+    UPDATE main_app_character
+    SET dexterity = 30;
+    """
+    Character.objects.update(dexterity=30)
+
+def grand_intelligence() -> None:
+    Character.objects.update(intelligence=40)
+
+def grand_strength() -> None:
+    Character.objects.update(strength=50)
+
+def delete_characters() -> None:
+    """
+    DELETE FROM main_app_character WHERE inventory = 'The inventory is empty';
+    """
+    Character.objects.filter(inventory='The inventory is empty').delete()

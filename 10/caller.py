@@ -220,6 +220,7 @@ def get_drivers_with_expired_licenses(due_date: date):
 #     print(f"{driver.first_name} {driver.last_name} has to renew their driving license!")
 
 def register_car_by_owner(owner: Owner):
+    #    car = Car.objects.filter(registration__isnull=True).first()
     first_unrelated_reg = Registration.objects.filter(car__isnull=True)[0]
     first_unreg_car = Car.objects.filter(registration__isnull=True)[0]
     if not (first_unrelated_reg and first_unreg_car):

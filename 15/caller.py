@@ -1,6 +1,6 @@
 import os
 import django
-from django.db.models import Count
+from django.db.models import Count, Sum
 
 # Set up Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
@@ -60,7 +60,7 @@ def add_records_to_database():
 
 
 # Run and print your queries
-print(add_records_to_database())
+# print(add_records_to_database())
 # print('All Products:')
 #
 # print(Product.objects.all())
@@ -78,10 +78,50 @@ print(add_records_to_database())
 # print(Product.objects.available_products_in_category("Food"))
 
 def product_quantity_ordered():
-    products_with_orders = OrderProduct.objects.filter(quantity__gte=1).order_by('-quantity')
+    products_with_orders = (((OrderProduct.objects.values('product__name')
+                            .annotate(tquantity=Sum('quantity')))
+                            .filter(quantity__gte=1))
+                            .order_by('-tquantity'))
+    #<QuerySet [{'id': 1, 'order_id': 1, 'product_id': 3, 'quantity': 2}, {'id': 2, 'order_id': 1, 'product_id': 6, 'quantity': 1},
     r = ''
     for p in products_with_orders:
-        r += f"\nQuantity ordered of {p.product.name}: {p.quantity}"
+        r += f"\nQuantity ordered of {p['product__name']}: {p['tquantity']}"
+        # print(p)
     return r
 
-print(product_quantity_ordered())
+def product_quantity_ordered_2():
+    orders = (Product.objects
+              .annotate(total=Sum('orderproduct__quantity'))
+              .exclude(total=None)
+              .values('name', 'total')
+              .order_by('-total'))
+    return '\n'.join(f"Quantity ordered of {o['name']}: {o['total']}" for o in orders)
+
+def product_quantity_ordered_3():
+    total_products_ordered = (Product.objects
+                              .annotate(total_ordered_quantity=Sum('orderproduct__quantity'))
+                              .exclude(total_ordered_quantity=None)
+                              .order_by('-total_ordered_quantity'))
+    result = []
+    for product in total_products_ordered:
+        result.append(f"Quantity ordered of {product.name}:{product.total_ordered_quantity}")
+    return "\n".join(result)
+
+# print(product_quantity_ordered())
+# print(product_quantity_ordered())
+
+def ordered_products_per_customer():
+    orders = (Order.objects
+              .prefetch_related('orderproduct_set__product__category')
+              .order_by('id'))
+    result = []
+    for o in orders:
+        result.append(f"Order ID: {o.id}, Customer: {o.customer.username}")
+
+        for ordered_product in o.orderproduct_set.all():
+            result.append(f"- Product: {ordered_product.product.name},"
+                          f" Category: {ordered_product.product.category.name}")
+
+    return '\n'.join(result)
+
+print(ordered_products_per_customer())

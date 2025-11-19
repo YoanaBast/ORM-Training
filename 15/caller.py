@@ -1,6 +1,6 @@
 import os
 import django
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Q, F
 
 # Set up Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
@@ -124,4 +124,53 @@ def ordered_products_per_customer():
 
     return '\n'.join(result)
 
-print(ordered_products_per_customer())
+# print(ordered_products_per_customer())
+
+from django.db.models import Prefetch
+
+def ordered_products_per_customer_2():
+    orders = (
+        Order.objects
+        .prefetch_related(
+            Prefetch(
+                'orderproduct_set',
+                queryset=OrderProduct.objects.select_related('product__category')
+            )
+        )
+        .select_related('customer')
+        .order_by('id')
+    )
+
+    lines = []
+
+    for order in orders:
+        lines.append(f"Order ID: {order.id}, Customer: {order.customer.username}")
+
+        for op in order.orderproduct_set.all():
+            p = op.product
+            lines.append(f"- Product: {p.name}, Category: {p.category.name}")
+
+    return "\n".join(lines)
+# print(ordered_products_per_customer_2())
+
+
+def filter_products():
+    prod = (Product.objects.filter(Q(is_available=True) & Q(price__gt=3.00))
+            .order_by('-price', 'name'))
+    return '\n'.join(f"{p.name}: {p.price}lv." for p in prod)
+
+
+# print(filter_products())
+
+
+def give_discount():
+    prod = (Product.objects
+          .filter(Q(is_available=True) & Q(price__gt=3.00))
+          .update(price= F('price') * 0.7))
+
+    wv =  (Product.objects.filter(is_available=True)
+          .order_by('-price', 'name'))
+
+    return '\n'.join(f"{w.name}: {w.price}lv." for w in wv)
+
+# print(give_discount())

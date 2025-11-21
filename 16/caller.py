@@ -6,7 +6,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
 django.setup()
 
 # Import your models here
-from main_app.models import VideoGame, Invoice, BillingInfo, Programmer, Project, Technology
+from main_app.models import VideoGame, Invoice, BillingInfo, Programmer, Project, Technology, Task, Exercise
 # Run and print your queries
 
 # Create instances of VideoGame with real data
@@ -158,3 +158,105 @@ from main_app.models import VideoGame, Invoice, BillingInfo, Programmer, Project
 #     print(f"Project: {project.name} for {specific_programmer.name}")
 #     for technology in project.technologies_used.all():
 #         print(f"- Technology: {technology.name}")
+from datetime import date
+
+# Create task instances with custom creation dates
+# task1 = Task(
+#     title="Task 1",
+#     description="Description for Task 1",
+#     priority="High",
+#     creation_date=date(2023, 1, 15),
+#     completion_date=date(2023, 1, 25)
+# )
+#
+# task2 = Task(
+#     title="Task 2",
+#     description="Description for Task 2",
+#     priority="Medium",
+#     is_completed=True,
+#     creation_date=date(2023, 2, 1),
+#     completion_date=date(2023, 2, 10)
+# )
+#
+# task3 = Task(
+#     title="Task 3",
+#     description="Description for Task 3",
+#     priority="Hard",
+#     is_completed=True,
+#     creation_date=date(2023, 1, 15),
+#     completion_date=date(2023, 1, 20)
+# )
+#
+# # Save the tasks to the database
+# task1.save()
+# task2.save()
+# task3.save()
+#
+# # 1. Get ongoing high-priority tasks
+# ongoing_high_priority = Task.ongoing_high_priority_tasks()
+# print("Ongoing High Priority Tasks:")
+# for task in ongoing_high_priority:
+#     print("- " + task.title)
+#
+# # 2. Get completed medium-priority tasks
+# completed_mid_priority = Task.completed_mid_priority_tasks()
+# print("Completed Medium Priority Tasks:")
+# for task in completed_mid_priority:
+#     print("- " + task.title)
+#
+# # 3. Search for tasks based on a query
+# search_results = Task.search_tasks("Task 3")
+# print("Search Results:")
+# for task in search_results:
+#     print("- " + task.title)
+#
+# # 4. Get recent completed tasks
+# recent_completed = task1.recent_completed_tasks(days=5)
+# print("Recent Completed Tasks:")
+# for task in recent_completed:
+#     print("- " + task.title)
+# Create instances of Exercise
+# exercise1 = Exercise.objects.create(
+#     name="Push-ups",
+#     category="Strength",
+#     difficulty_level=4,
+#     duration_minutes=10,
+#     repetitions=50,
+# )
+#
+# exercise2 = Exercise.objects.create(
+#     name="Running",
+#     category="Cardio",
+#     difficulty_level=7,
+#     duration_minutes=20,
+#     repetitions=0,
+# )
+#
+# exercise3 = Exercise.objects.create(
+#     name="Pull-ups",
+#     category="Strength",
+#     difficulty_level=13,
+#     duration_minutes=35,
+#     repetitions=20,
+# )
+#
+# # Print the results
+# long_and_hard_exercises = Exercise.get_long_and_hard_exercises()
+# print("Long and hard exercises:")
+# for exercise in long_and_hard_exercises:
+#     print("- " + exercise.name)
+#
+# short_and_easy_exercises = Exercise.get_short_and_easy_exercises()
+# print("Short and easy exercises:")
+# for exercise in short_and_easy_exercises:
+#     print("- " + exercise.name)
+#
+# exercises_within_duration = Exercise.get_exercises_within_duration(20, 40)
+# print("Exercises within 20 - 40 minutes:")
+# for exercise in exercises_within_duration:
+#     print("- " + exercise.name)
+#
+# exercises_with_difficulty_and_repetitions = Exercise.get_exercises_with_difficulty_and_repetitions(6, 15)
+# print("Exercises with difficulty 6+ and repetitions 15+:")
+# for exercise in exercises_with_difficulty_and_repetitions:
+#     print("- " + exercise.name)

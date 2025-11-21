@@ -1,7 +1,8 @@
+from datetime import timedelta
 from decimal import Decimal
 
 from django.db import models
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, F
 from .validators import RangeValidator
 
 # Create your models here.
@@ -143,6 +144,33 @@ class Task(models.Model):
     creation_date = models.DateField()
     completion_date = models.DateField()
 
+    @classmethod
+    def ongoing_high_priority_tasks(cls):
+        #- returns all tasks (in a query set) that:
+        #· Have priority set to "High".
+        #· Are not completed.
+        # · Have a completion date greater than the creation date.
+        return cls.objects.filter(Q(priority='High') & Q(is_completed=False) & Q(completion_date__gt=F('creation_date')))
+
+    @classmethod
+    def completed_mid_priority_tasks(cls):
+        # - returns all tasks (in a queryset) that:
+        # · Have priority set to "Medium".
+        # · Are completed.
+        return cls.objects.filter(Q(priority='Medium') & Q(is_completed=True))
+
+    @classmethod
+    def search_tasks(cls, query: str):
+        # - returns all tasks (in a queryset) that:
+        # · Contain the query in their title or their description.
+        return cls.objects.filter(Q(title__contains=query) | Q(description__contains=query))
+
+    @classmethod
+    def recent_completed_tasks(cls, days: int):
+        # - returns all tasks (in a queryset) that:
+        # · Are completed.
+        # · Have a completion date greater than or equal to the creation date subtracted by the given days.
+        return cls.objects.filter(Q(is_completed=True) &Q(completion_date__gte=F('creation_date') -  timedelta(days=days)))
 
 class Exercise(models.Model):
     name = models.CharField(max_length=100)
@@ -150,3 +178,31 @@ class Exercise(models.Model):
     difficulty_level = models.PositiveIntegerField()
     duration_minutes = models.PositiveIntegerField()
     repetitions = models.PositiveIntegerField()
+
+    @classmethod
+    def get_long_and_hard_exercises(cls):
+        # - returns all exercises (in a queryset) that:
+        # · Duration minutes greater than 30.
+        # · Difficulty greater than or equal to 10.
+        return cls.objects.filter(Q(duration_minutes__gt=30) & Q(difficulty_level__gte=10))
+
+    @classmethod
+    def get_short_and_easy_exercises(cls):
+        # - returns all exercises (in a queryset) that:
+        # · Duration minutes less than 15.
+        # · Difficulty less than 5.
+        return cls.objects.filter(duration_minutes__lt=15, difficulty_level__lt=5)
+
+    @classmethod
+    def get_exercises_within_duration(cls, min_duration: int, max_duration: int):
+        # - returns all exercises (in a queryset) that:
+        # · Duration minutes greater than or equal to the minimum duration.
+        # · Duration minutes less than or equal to the maximum duration.
+        return cls.objects.filter(duration_minutes__gte=min_duration, duration_minutes__lte=max_duration)
+
+    @classmethod
+    def get_exercises_with_difficulty_and_repetitions(cls, min_difficulty: int, min_repetitions: int):
+        # - returns all exercises (in a queryset) that:
+        # · Difficulty greater than or equal to the minimum difficulty.
+        # · Repetitions greater than or equal to the minimum repetitions.
+        return cls.objects.filter(difficulty_level__gte=min_difficulty, repetitions__gte=min_repetitions)
